@@ -5,7 +5,7 @@ init()
 os.system('cls')
 print()
 while True:
-	text = input(f'{Fore.GREEN}shell -> {Style.RESET_ALL}')
+	text = input('shell -> ')
 	if text.strip() == "": continue
 	
 	if text.startswith('RUN("') and text.endswith('")'):
