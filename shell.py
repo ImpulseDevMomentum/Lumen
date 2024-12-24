@@ -1,6 +1,7 @@
-import basic
-import os
+import basic, os
 
+os.system('cls')
+print()
 while True:
 	text = input('shell -> ')
 	if text.strip() == "": continue
