@@ -6,9 +6,6 @@ from errorcomp import *
 from colorama import init, Fore, Style
 import string, os, math
 
-# Initialize colorama
-init()
-
 ########
 # CONS #
 ########
