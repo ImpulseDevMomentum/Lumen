@@ -4,9 +4,7 @@
 
 from errorcomp import *
 
-import string
-import os
-import math
+import string, os, math
 
 ########
 # CONS #
