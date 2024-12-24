@@ -3,8 +3,11 @@
 ###########
 
 from errorcomp import *
-
+from colorama import init, Fore, Style
 import string, os, math
+
+# Initialize colorama
+init()
 
 ########
 # CONS #
@@ -26,8 +29,8 @@ class Error:
     self.details = details
   
   def as_string(self):
-    result  = f'{self.error_name}: {self.details}\n'
-    result += f'File {self.pos_start.fn}, line {self.pos_start.ln + 1}'
+    result  = f'{Fore.RED}{self.error_name}{Style.RESET_ALL}: {self.details}\n'
+    result += f'{Fore.YELLOW}File {self.pos_start.fn}, line {self.pos_start.ln + 1}{Style.RESET_ALL}'
     result += '\n\n' + string_with_arrows(self.pos_start.ftxt, self.pos_start, self.pos_end)
     return result
 
@@ -50,7 +53,7 @@ class RTError(Error):
 
   def as_string(self):
     result  = self.generate_traceback()
-    result += f'{self.error_name}: {self.details}'
+    result += f'{Fore.RED}{self.error_name}{Style.RESET_ALL}: {self.details}'
     result += '\n\n' + string_with_arrows(self.pos_start.ftxt, self.pos_start, self.pos_end)
     return result
 
@@ -60,11 +63,11 @@ class RTError(Error):
     ctx = self.context
 
     while ctx:
-      result = f'  File {pos.fn}, line {str(pos.ln + 1)}, in {ctx.display_name}\n' + result
+      result = f'  {Fore.YELLOW}File {pos.fn}, line {str(pos.ln + 1)}, in {ctx.display_name}{Style.RESET_ALL}\n' + result
       pos = ctx.parent_entry_pos
       ctx = ctx.parent
 
-    return 'Traceback (most recent call last):\n' + result
+    return f'{Fore.RED}Traceback (most recent call last):{Style.RESET_ALL}\n' + result
 
 #########
 #  POS  # 
