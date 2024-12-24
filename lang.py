@@ -692,7 +692,7 @@ class Parser:
         if res.error: return res
         return res.success(VarAssignNode(var_name, expr))
 
-    node = res.register(self.bin_op(self.comp_expr, ((LU_KEYWORD, 'AND'), (LU_KEYWORD, 'OR'))))
+    node = res.register(self.bin_op(self.comp_expr, ((LU_KEYWORD, 'AND'), (LU_KEYWORD, 'OR'), LU_ARROW)))
 
     if res.error:
         return res.failure(InvalidSyntaxError(
@@ -1250,18 +1250,27 @@ class Parser:
 
   def bin_op(self, func_a, ops, func_b=None):
     if func_b == None:
-      func_b = func_a
+        func_b = func_a
     
     res = ParseResult()
     left = res.register(func_a())
     if res.error: return res
 
-    # Dodaj obsługę strzałki dla PRINT
-    if isinstance(left, CallNode) and isinstance(left.node_to_call, VarAccessNode) and left.node_to_call.var_name_tok.value == 'PRINT':
-        if self.current_tok.type == LU_ARROW:
-            res.register_advancement()
-            self.advance()
-            
+    while self.current_tok.type in ops or (self.current_tok.type, self.current_tok.value) in ops:
+        op_tok = self.current_tok
+        res.register_advancement()
+        self.advance()
+
+        # Specjalna obsługa dla strzałki
+        if op_tok.type == LU_ARROW:
+            if not (isinstance(left, CallNode) and 
+                   isinstance(left.node_to_call, VarAccessNode) and 
+                   left.node_to_call.var_name_tok.value == 'PRINT'):
+                return res.failure(InvalidSyntaxError(
+                    op_tok.pos_start, op_tok.pos_end,
+                    "Arrow operator can only be used after PRINT"
+                ))
+
             if self.current_tok.type != LU_IDENTIFIER:
                 return res.failure(InvalidSyntaxError(
                     self.current_tok.pos_start, self.current_tok.pos_end,
@@ -1272,7 +1281,7 @@ class Parser:
             res.register_advancement()
             self.advance()
             
-            return res.success(ListNode(
+            left = ListNode(
                 [
                     left,
                     VarAssignNode(
@@ -1285,12 +1294,9 @@ class Parser:
                 ],
                 left.pos_start,
                 var_name.pos_end
-            ))
+            )
+            continue
 
-    while self.current_tok.type in ops or (self.current_tok.type, self.current_tok.value) in ops:
-        op_tok = self.current_tok
-        res.register_advancement()
-        self.advance()
         right = res.register(func_b())
         if res.error: return res
         left = BinOpNode(left, op_tok, right)
