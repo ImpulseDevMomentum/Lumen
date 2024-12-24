@@ -1,5 +1,5 @@
 # This is old code from before I discovered that CodePulse has its own GitHub repository,
-# where I can just download the code and modify it to suit my visual preferences.
+# where I can just download the code and modify it to suit my visual preferences and add new things.
 
 
 ##########
