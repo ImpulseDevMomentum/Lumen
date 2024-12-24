@@ -10,5 +10,5 @@ instead of `VAR` you have `SET` <br>
 To start your own program, just start shell.py and then type RUN("your file with **.lum** extension")
 
 Other Links:
-FuzeMC: https://github.com/ImpulseDevMomentum/fuzemc
-Wish Logger JS: https://github.com/ImpulseDevMomentum/WishLoggerJS
+FuzeMC: https://github.com/ImpulseDevMomentum/fuzemc <br>
+Wish Logger JS: https://github.com/ImpulseDevMomentum/WishLoggerJS <br>
