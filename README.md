@@ -12,6 +12,18 @@ Here are some syntax differences:
 To start your own program, simply run `shell.py` and then type RUN("your file with **.lum** extension"). The basic code example
 is in the **example.lum** file; I won't include any other examples.
 
+You can also use the shell interactively. For example:
+
+- `SET b = 5`
+- `IF b == 5 THEN PRINT("True") ELSE PRINT("NO")`
+
+You can then type:
+
+- `b + 1`
+and again:
+
+- `IF b == 5 THEN PRINT("True") ELSE PRINT("NO")`
+
 Other Links: <br>
 CodePulse's Github: https://github.com/davidcallanan <br>
 Wish Logger PY: https://github.com/ImpulseDevMomentum/WishLoggerPY <br>
