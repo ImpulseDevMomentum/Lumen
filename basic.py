@@ -1,6 +1,6 @@
-#######################################
-# IMPORTS
-#######################################
+###########
+# IMPORTS #
+###########
 
 from errorcomp import *
 
@@ -8,17 +8,17 @@ import string
 import os
 import math
 
-#######################################
-# CONSTANTS
-#######################################
+########
+# CONS #
+########
 
 DIGITS = '0123456789'
 LETTERS = string.ascii_letters
 LETTERS_DIGITS = LETTERS + DIGITS
 
-#######################################
-# ERRORS
-#######################################
+##########
+# ERRORS #
+##########
 
 class Error:
   def __init__(self, pos_start, pos_end, error_name, details):
@@ -68,9 +68,9 @@ class RTError(Error):
 
     return 'Traceback (most recent call last):\n' + result
 
-#######################################
-# POSITION
-#######################################
+#########
+#  POS  # 
+#########
 
 class Position:
   def __init__(self, idx, ln, col, fn, ftxt):
@@ -93,9 +93,9 @@ class Position:
   def copy(self):
     return Position(self.idx, self.ln, self.col, self.fn, self.ftxt)
 
-#######################################
-# TOKENS
-#######################################
+##########
+# TOKENS #
+##########
 
 LU_INT         = 'INT'
 LU_FLOAT       = 'FLOAT'
@@ -124,7 +124,7 @@ LU_NEWLINE     = 'NEWLINE'
 LU_EOF         = 'EOF'
 
 KEYWORDS = [
-  'VAR',
+  'SET',
   'AND',
   'OR',
   'NOT',
@@ -163,9 +163,9 @@ class Token:
     if self.value: return f'{self.type}:{self.value}'
     return f'{self.type}'
 
-#######################################
-# LEXER
-#######################################
+#########
+# LEXER #
+#########
 
 class Lexer:
   def __init__(self, fn, text):
@@ -360,9 +360,9 @@ class Lexer:
 
     self.advance()
 
-#######################################
-# NODES
-#######################################
+#########
+# NODES #
+#########
 
 class NumberNode:
   def __init__(self, tok):
@@ -503,9 +503,9 @@ class BreakNode:
     self.pos_start = pos_start
     self.pos_end = pos_end
 
-#######################################
-# PARSE RESULT
-#######################################
+################
+# PARSE RESULT #
+################
 
 class ParseResult:
   def __init__(self):
@@ -540,9 +540,9 @@ class ParseResult:
       self.error = error
     return self
 
-#######################################
-# PARSER
-#######################################
+##########
+# PARSER #
+##########
 
 class Parser:
   def __init__(self, tokens):
@@ -572,8 +572,6 @@ class Parser:
         "Token cannot appear after previous tokens"
       ))
     return res
-
-  ###################################
 
   def statements(self):
     res = ParseResult()
@@ -640,14 +638,14 @@ class Parser:
     if res.error:
       return res.failure(InvalidSyntaxError(
         self.current_tok.pos_start, self.current_tok.pos_end,
-        "Expected 'BACK', 'CONTINUE', 'BREAK', 'VAR', 'IF', 'FOR', 'WHILE', 'FUNC', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
+        "Expected 'BACK', 'CONTINUE', 'BREAK', 'SET', 'IF', 'FOR', 'WHILE', 'FUNC', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
       ))
     return res.success(expr)
 
   def expr(self):
     res = ParseResult()
 
-    if self.current_tok.matches(LU_KEYWORD, 'VAR'):
+    if self.current_tok.matches(LU_KEYWORD, 'SET'):
       res.register_advancement()
       self.advance()
 
@@ -678,7 +676,7 @@ class Parser:
     if res.error:
       return res.failure(InvalidSyntaxError(
         self.current_tok.pos_start, self.current_tok.pos_end,
-        "Expected 'VAR', 'IF', 'FOR', 'WHILE', 'FUNC', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
+        "Expected 'SET', 'IF', 'FOR', 'WHILE', 'FUNC', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
       ))
 
     return res.success(node)
@@ -745,7 +743,7 @@ class Parser:
         if res.error:
           return res.failure(InvalidSyntaxError(
             self.current_tok.pos_start, self.current_tok.pos_end,
-            "Expected ')', 'VAR', 'IF', 'FOR', 'WHILE', 'FUNC', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
+            "Expected ')', 'SET', 'IF', 'FOR', 'WHILE', 'FUNC', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
           ))
 
         while self.current_tok.type == LU_COMMA:
@@ -852,7 +850,7 @@ class Parser:
       if res.error:
         return res.failure(InvalidSyntaxError(
           self.current_tok.pos_start, self.current_tok.pos_end,
-          "Expected ']', 'VAR', 'IF', 'FOR', 'WHILE', 'FUNC', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
+          "Expected ']', 'SET', 'IF', 'FOR', 'WHILE', 'FUNC', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
         ))
 
       while self.current_tok.type == LU_COMMA:
@@ -1229,8 +1227,6 @@ class Parser:
       False
     ))
 
-  ###################################
-
   def bin_op(self, func_a, ops, func_b=None):
     if func_b == None:
       func_b = func_a
@@ -1249,9 +1245,9 @@ class Parser:
 
     return res.success(left)
 
-#######################################
-# RUNTIME RESULT
-#######################################
+##########
+# RT RES #
+##########
 
 class RTResult:
   def __init__(self):
@@ -1297,7 +1293,6 @@ class RTResult:
     return self
 
   def should_return(self):
-    # Note: this will allow you to continue and break outside the current function
     return (
       self.error or
       self.func_return_value or
@@ -1305,9 +1300,9 @@ class RTResult:
       self.loop_should_break
     )
 
-#######################################
-# VALUES
-#######################################
+#######
+# VAL #
+#######
 
 class Value:
   def __init__(self):
@@ -1869,9 +1864,9 @@ BuiltInFunction.extend      = BuiltInFunction("extend")
 BuiltInFunction.len					= BuiltInFunction("len")
 BuiltInFunction.run					= BuiltInFunction("run")
 
-#######################################
-# CONTEXT
-#######################################
+###########
+# CONTEXT #
+###########
 
 class Context:
   def __init__(self, display_name, parent=None, parent_entry_pos=None):
@@ -1880,9 +1875,9 @@ class Context:
     self.parent_entry_pos = parent_entry_pos
     self.symbol_table = None
 
-#######################################
-# SYMBOL TABLE
-#######################################
+################
+# SYMBOL TABLE #
+################
 
 class SymbolTable:
   def __init__(self, parent=None):
@@ -1901,9 +1896,9 @@ class SymbolTable:
   def remove(self, name):
     del self.symbols[name]
 
-#######################################
-# INTERPRETER
-#######################################
+#########
+# INTER #
+#########
 
 class Interpreter:
   def visit(self, node, context):
@@ -1913,8 +1908,6 @@ class Interpreter:
 
   def no_visit_method(self, node, context):
     raise Exception(f'No visit_{type(node).__name__} method defined')
-
-  ###################################
 
   def visit_NumberNode(self, node, context):
     return RTResult().success(
