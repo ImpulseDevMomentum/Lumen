@@ -1,4 +1,4 @@
-import basic, os
+import lang, os
 
 os.system('cls')
 print()
@@ -15,7 +15,7 @@ while True:
 			print(f"Error: File {filename} not found")
 			continue
 			
-	result, error = basic.run('<stdin>', text)
+	result, error = lang.run('<stdin>', text)
 
 	if error:
 		print(error.as_string())
