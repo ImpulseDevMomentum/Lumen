@@ -1,8 +1,19 @@
 import basic
+import os
 
 while True:
 	text = input('shell -> ')
 	if text.strip() == "": continue
+	
+	if text.startswith('RUN("') and text.endswith('")'):
+		filename = text[5:-2]
+		if not filename.endswith('.lum'):
+			print("Error: Only .lum files are supported")
+			continue
+		if not os.path.exists(filename):
+			print(f"Error: File {filename} not found")
+			continue
+			
 	result, error = basic.run('<stdin>', text)
 
 	if error:
