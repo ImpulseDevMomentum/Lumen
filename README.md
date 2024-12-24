@@ -10,7 +10,7 @@ Here are some syntax differences:
 - instead of `VAR` you have `SET` <br>
 
 To start your own program, simply run `shell.py` and then type RUN("your file with **.lum** extension"). The basic code example
-is in the **example.lum** file; I ~~won't~~ include any other examples.
+is in the **example.lum** file; I won't include any other examples.
 
 Other Links: <br>
 CodePulse's Github: https://github.com/davidcallanan <br>
