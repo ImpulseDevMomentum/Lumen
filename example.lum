@@ -1,17 +1,17 @@
 PRINT("Enter first number: ")
-VAR num1 = INPUT_INT()
+SET num1 = INPUT_INT()
 
 PRINT("Enter second number: ")
-VAR num2 = INPUT_INT()
+SET num2 = INPUT_INT()
 
-VAR suma = num1 + num2
-VAR roznica = num1 - num2
-VAR iloczyn = num1 * num2
+SET suma = num1 + num2
+SET roznica = num1 - num2
+SET iloczyn = num1 * num2
 
 IF num2 == 0 THEN
     PRINT("You cant devide by zero")
 OTHER num2 != 0 THEN
-    VAR iloraz = num1 / num2
+    SET iloraz = num1 / num2
     PRINT("Division result: ")
     PRINT(iloraz)
 STOP
