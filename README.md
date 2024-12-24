@@ -14,5 +14,6 @@ is in the **example.lum** file; I won't include any other examples.
 
 Other Links: <br>
 CodePulse's Github: https://github.com/davidcallanan <br>
-FuzeMC: https://github.com/ImpulseDevMomentum/fuzemc <br>
+Wish Logger PY: https://github.com/ImpulseDevMomentum/WishLoggerPY <br>
 Wish Logger JS: https://github.com/ImpulseDevMomentum/WishLoggerJS <br>
+FuzeMC: https://github.com/ImpulseDevMomentum/fuzemc <br>
