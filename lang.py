@@ -198,7 +198,13 @@ class Lexer:
         tokens.append(Token(LU_PLUS, pos_start=self.pos))
         self.advance()
       elif self.current_char == '-':
-        tokens.append(self.make_minus_or_arrow())
+        if self.pos.idx + 1 < len(self.text) and self.text[self.pos.idx + 1] == '>':
+            tokens.append(Token(LU_ARROW, pos_start=self.pos))
+            self.advance()
+            self.advance()
+        else:
+            tokens.append(Token(LU_MINUS, pos_start=self.pos))
+            self.advance()
       elif self.current_char == '*':
         tokens.append(Token(LU_MUL, pos_start=self.pos))
         self.advance()
@@ -563,13 +569,20 @@ class Parser:
       self.current_tok = self.tokens[self.tok_idx]
 
   def parse(self):
-    res = self.statements()
-    if not res.error and self.current_tok.type != LU_EOF:
-      return res.failure(InvalidSyntaxError(
-        self.current_tok.pos_start, self.current_tok.pos_end,
-        "Token cannot appear after previous tokens"
-      ))
-    return res
+    res = ParseResult()
+    
+    # Parse all statements
+    statements = res.register(self.statements())
+    if res.error: return res
+    
+    # Sprawdź czy to koniec pliku
+    if self.current_tok.type != LU_EOF:
+        return res.failure(InvalidSyntaxError(
+            self.current_tok.pos_start, self.current_tok.pos_end,
+            "Expected '+', '-', '*', '/', '^', '==', '!=', '<', '>', <=', '>=', 'AND', 'OR', '->', newline or EOF"
+        ))
+        
+    return res.success(statements)
 
   def statements(self):
     res = ParseResult()
@@ -582,7 +595,12 @@ class Parser:
 
     statement = res.register(self.statement())
     if res.error: return res
-    statements.append(statement)
+    
+    # Jeśli statement jest ListNode, dodaj jego elementy pojedynczo
+    if isinstance(statement, ListNode):
+        statements.extend(statement.element_nodes)
+    else:
+        statements.append(statement)
 
     more_statements = True
 
@@ -601,7 +619,12 @@ class Parser:
         self.reverse(res.to_reverse_count)
         more_statements = False
         continue
-      statements.append(statement)
+        
+      # Jeśli statement jest ListNode, dodaj jego elementy pojedynczo
+      if isinstance(statement, ListNode):
+          statements.extend(statement.element_nodes)
+      else:
+          statements.append(statement)
 
     return res.success(ListNode(
       statements,
@@ -644,38 +667,38 @@ class Parser:
     res = ParseResult()
 
     if self.current_tok.matches(LU_KEYWORD, 'SET'):
-      res.register_advancement()
-      self.advance()
+        res.register_advancement()
+        self.advance()
 
-      if self.current_tok.type != LU_IDENTIFIER:
-        return res.failure(InvalidSyntaxError(
-          self.current_tok.pos_start, self.current_tok.pos_end,
-          "Expected identifier"
-        ))
+        if self.current_tok.type != LU_IDENTIFIER:
+            return res.failure(InvalidSyntaxError(
+                self.current_tok.pos_start, self.current_tok.pos_end,
+                "Expected identifier"
+            ))
 
-      var_name = self.current_tok
-      res.register_advancement()
-      self.advance()
+        var_name = self.current_tok
+        res.register_advancement()
+        self.advance()
 
-      if self.current_tok.type != LU_EQ:
-        return res.failure(InvalidSyntaxError(
-          self.current_tok.pos_start, self.current_tok.pos_end,
-          "Expected '='"
-        ))
+        if self.current_tok.type != LU_EQ:
+            return res.failure(InvalidSyntaxError(
+                self.current_tok.pos_start, self.current_tok.pos_end,
+                "Expected '='"
+            ))
 
-      res.register_advancement()
-      self.advance()
-      expr = res.register(self.expr())
-      if res.error: return res
-      return res.success(VarAssignNode(var_name, expr))
+        res.register_advancement()
+        self.advance()
+        expr = res.register(self.expr())
+        if res.error: return res
+        return res.success(VarAssignNode(var_name, expr))
 
     node = res.register(self.bin_op(self.comp_expr, ((LU_KEYWORD, 'AND'), (LU_KEYWORD, 'OR'))))
 
     if res.error:
-      return res.failure(InvalidSyntaxError(
-        self.current_tok.pos_start, self.current_tok.pos_end,
-        "Expected 'SET', 'IF', 'FOR', 'WHILE', 'FUNC', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
-      ))
+        return res.failure(InvalidSyntaxError(
+            self.current_tok.pos_start, self.current_tok.pos_end,
+            "Expected 'SET', 'IF', 'FOR', 'WHILE', 'FUNC', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
+        ))
 
     return res.success(node)
 
@@ -1233,13 +1256,44 @@ class Parser:
     left = res.register(func_a())
     if res.error: return res
 
+    # Dodaj obsługę strzałki dla PRINT
+    if isinstance(left, CallNode) and isinstance(left.node_to_call, VarAccessNode) and left.node_to_call.var_name_tok.value == 'PRINT':
+        if self.current_tok.type == LU_ARROW:
+            res.register_advancement()
+            self.advance()
+            
+            if self.current_tok.type != LU_IDENTIFIER:
+                return res.failure(InvalidSyntaxError(
+                    self.current_tok.pos_start, self.current_tok.pos_end,
+                    "Expected identifier after '->'"
+                ))
+                
+            var_name = self.current_tok
+            res.register_advancement()
+            self.advance()
+            
+            return res.success(ListNode(
+                [
+                    left,
+                    VarAssignNode(
+                        var_name,
+                        CallNode(
+                            VarAccessNode(Token(LU_IDENTIFIER, 'INPUT_INT', pos_start=left.pos_start)),
+                            []
+                        )
+                    )
+                ],
+                left.pos_start,
+                var_name.pos_end
+            ))
+
     while self.current_tok.type in ops or (self.current_tok.type, self.current_tok.value) in ops:
-      op_tok = self.current_tok
-      res.register_advancement()
-      self.advance()
-      right = res.register(func_b())
-      if res.error: return res
-      left = BinOpNode(left, op_tok, right)
+        op_tok = self.current_tok
+        res.register_advancement()
+        self.advance()
+        right = res.register(func_b())
+        if res.error: return res
+        left = BinOpNode(left, op_tok, right)
 
     return res.success(left)
 
@@ -1926,7 +1980,8 @@ class Interpreter:
       if res.should_return(): return res
 
     return res.success(
-      List(elements).set_context(context).set_pos(node.pos_start, node.pos_end))
+      List(elements).set_context(context).set_pos(node.pos_start, node.pos_end)
+    )
 
   def visit_VarAccessNode(self, node, context):
     res = RTResult()
