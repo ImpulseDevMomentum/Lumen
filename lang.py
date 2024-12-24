@@ -571,11 +571,9 @@ class Parser:
   def parse(self):
     res = ParseResult()
     
-    # Parse all statements
     statements = res.register(self.statements())
     if res.error: return res
     
-    # Sprawdź czy to koniec pliku
     if self.current_tok.type != LU_EOF:
         return res.failure(InvalidSyntaxError(
             self.current_tok.pos_start, self.current_tok.pos_end,
@@ -596,7 +594,6 @@ class Parser:
     statement = res.register(self.statement())
     if res.error: return res
     
-    # Jeśli statement jest ListNode, dodaj jego elementy pojedynczo
     if isinstance(statement, ListNode):
         statements.extend(statement.element_nodes)
     else:
@@ -620,7 +617,6 @@ class Parser:
         more_statements = False
         continue
         
-      # Jeśli statement jest ListNode, dodaj jego elementy pojedynczo
       if isinstance(statement, ListNode):
           statements.extend(statement.element_nodes)
       else:
@@ -1261,7 +1257,6 @@ class Parser:
         res.register_advancement()
         self.advance()
 
-        # Specjalna obsługa dla strzałki
         if op_tok.type == LU_ARROW:
             if not (isinstance(left, CallNode) and 
                    isinstance(left.node_to_call, VarAccessNode) and 
