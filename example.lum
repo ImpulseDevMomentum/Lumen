@@ -1,7 +1,7 @@
-PRINT("Podaj pierwsza liczbe: ")
+PRINT("Enter first number: ")
 VAR num1 = INPUT_INT()
 
-PRINT("Podaj druga liczbe: ")
+PRINT("Enter second number: ")
 VAR num2 = INPUT_INT()
 
 VAR suma = num1 + num2
@@ -9,25 +9,25 @@ VAR roznica = num1 - num2
 VAR iloczyn = num1 * num2
 
 IF num2 == 0 THEN
-    PRINT("Nie mozna dzielic przez zero!")
+    PRINT("You cant devide by zero")
 OTHER num2 != 0 THEN
     VAR iloraz = num1 / num2
-    PRINT("Wynik dzielenia: ")
+    PRINT("Division result: ")
     PRINT(iloraz)
 STOP
 
-PRINT("Wynik dodawania: ")
+PRINT("Result Of Adding: ")
 PRINT(suma)
-PRINT("Wynik odejmowania: ")
+PRINT("Result Of Substracing: ")
 PRINT(roznica)
-PRINT("Wynik mnozenia: ")
+PRINT("Result Of Multiplication: ")
 PRINT(iloczyn)
 
-# Sprawdź ktora liczba jest wieksza
+# Check which number is greater
 IF num1 > num2 THEN
-    PRINT("Pierwsza liczba jest wieksza!")
+    PRINT("First number is greater")
 OTHER num1 < num2 THEN
-    PRINT("Druga liczba jest wieksza!")
+    PRINT("Second number is greater")
 ELSE
-    PRINT("Liczby sa rowne!")
+    PRINT("Numbers are equal")
 STOP
