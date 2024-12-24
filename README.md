@@ -12,5 +12,6 @@ Here are some syntax differences:
 To start your own program, simply run `shell.py` and then type RUN("your file with **.lum** extension")
 
 Other Links:
+CodePulse's Github: https://github.com/davidcallanan
 FuzeMC: https://github.com/ImpulseDevMomentum/fuzemc <br>
 Wish Logger JS: https://github.com/ImpulseDevMomentum/WishLoggerJS <br>
