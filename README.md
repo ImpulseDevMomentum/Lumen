@@ -12,17 +12,17 @@ Here are some syntax differences:
 To start your own program, simply run `shell.py` and then type RUN("your file with **.lum** extension"). The basic code example
 is in the **example.lum** file; I won't include any other examples.
 
-You can also use the shell interactively. For example:
+You can also use the shell interactively. For example: 
 
 - `SET b = 5`
 - `IF b == 5 THEN PRINT("True") ELSE PRINT("NO")`
 
 You can then type:
 
-- `b + 1`
-and again:
+- `b + 1` <br>
+and again: <br>
 
-- `IF b == 5 THEN PRINT("True") ELSE PRINT("NO")`
+- `IF b == 5 THEN PRINT("True") ELSE PRINT("NO")` <br>
 
 Other Links: <br>
 CodePulse's Github: https://github.com/davidcallanan <br>
