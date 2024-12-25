@@ -1,0 +1,33 @@
+PRINT("Enter first number: ")
+SET num1 = INPUT_INT()
+
+# You can also use -> after PRINT to set a variable. This will change PRINT to INPUT (kind of).
+PRINT("Enter second number: ") -> num2
+
+SET suma = num1 + num2
+SET roznica = num1 - num2
+SET iloczyn = num1 * num2
+
+IF num2 == 0 THEN
+    PRINT("You cant devide by zero")
+OTHER num2 != 0 THEN
+    SET iloraz = num1 / num2
+    PRINT("Division result: ")
+    PRINT(iloraz)
+STOP
+
+PRINT("Result Of Adding: ")
+PRINT(suma)
+PRINT("Result Of Substracing: ")
+PRINT(roznica)
+PRINT("Result Of Multiplication: ")
+PRINT(iloczyn)
+
+# Check which number is greater
+IF num1 > num2 THEN
+    PRINT("First number is greater")
+OTHER num1 < num2 THEN
+    PRINT("Second number is greater")
+ELSE
+    PRINT("Numbers are equal")
+STOP

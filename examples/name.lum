@@ -1,0 +1,7 @@
+PRINT("Select your name: ")
+SET name = INPUT()
+
+PRINT("Select your age: ")
+SET age = INPUT()
+
+PRINT("Your name is " + name + " you are " + age + " years old")
