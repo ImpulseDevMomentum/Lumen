@@ -10,7 +10,7 @@ Here are some syntax differences:
 - instead of `VAR` you have `SET` <br>
 
 To start your own program, simply run `shell.py` and then type RUN("your file with **.lum** extension"). The basic code example
-is in the **example.lum** or **calc.lum** files; I _probably_ won't include any other examples.
+is in the **/examples/example1.lum** or **/examples/calc.lum** or **/examples/name.lum** files; I _probably_ won't include any other examples.
 
 You can also use the shell interactively. For example: 
 
