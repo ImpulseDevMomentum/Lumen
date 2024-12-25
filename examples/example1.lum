@@ -1,7 +1,7 @@
 PRINT("Enter first number: ")
 SET num1 = INPUT_INT()
 
-# You can also use -> after PRINT to set a variable. This will change PRINT to INPUT (kind of).
+# You can also use -> after PRINT to set a variable. This will change PRINT to INPUT (kind of) ONLY INTEGERS!.
 PRINT("Enter second number: ") -> num2
 
 SET suma = num1 + num2
