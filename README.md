@@ -22,7 +22,7 @@ You can then type:
 - `b + 1` <br>
 and again: <br>
 
-- `IF b == 5 THEN PRINT("True") ELSE PRINT("NO")` <br>
+- `IF b == 5 THEN PRINT("True") ELSE PRINT("NO")` <br><br><br><br>
 
 
 ⭐ FURTURE FEATURES/PLANS:
