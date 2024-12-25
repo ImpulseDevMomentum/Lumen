@@ -24,6 +24,21 @@ and again: <br>
 
 - `IF b == 5 THEN PRINT("True") ELSE PRINT("NO")` <br>
 
+
+⭐ FURTURE FEATURES/PLANS:
+- Add `l"{}"` to PRINT() ( so instead of `PRINT(f"{}")`, you'll be able to use `PRINT(l"{}")` ).
+- Add support for `+=` and `-=` operators.
+- Introduce `&` as an alternative for `AND` (without replacing `AND`).
+- Add built-in functions: `INT()`, `STR()`, and `FLOAT()`.
+
+> Complex Features:
+- Enhance `PRINT("") -> variable` functionality to automatically determine the type (`int`, `string`, or `float`) based on the context.
+- Integrate more APIs (from existing libraries such as `os`, `colorama`, etc.).
+- Create comprehensive documentation.
+- Develop a way to code custom libraries.
+- Custom `Lumen IDE`
+
+
 Other Links: <br>
 CodePulse's Github: https://github.com/davidcallanan <br>
 Wish Logger PY: https://github.com/ImpulseDevMomentum/WishLoggerPY <br>
