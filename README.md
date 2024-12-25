@@ -1,7 +1,7 @@
 This "language" was "created" for school purposes. Because of that, it is very, very simple, so please don't try to code next Cyberpunk. 
 It was based on this tutorial: https://www.youtube.com/watch?v=Eythq9848Fg&list=PLZQftyCk7_SdoVexSmwy_tBgs7P0b97yD&index by CodePulse.
 
-Here are some syntax differences:
+> Here are some syntax differences:
 
 - instead of `ELIF` you have `OTHER` <br>
 - instead of `RETURN` you have `BACK` <br>
@@ -25,13 +25,13 @@ and again: <br>
 - `IF b == 5 THEN PRINT("True") ELSE PRINT("NO")` <br><br><br><br>
 
 
-⭐ FURTURE FEATURES/PLANS:
+> ⭐ Furture features/plans:
 - Add `l"{}"` to PRINT() ( so instead of `PRINT(f"{}")`, you'll be able to use `PRINT(l"{}")` ).
 - Add support for `+=` and `-=` operators.
 - Introduce `&` as an alternative for `AND` (without replacing `AND`).
 - Add built-in functions: `INT()`, `STR()`, and `FLOAT()`.
 
-> Complex Features:
+> 😑 Complex Features:
 - Enhance `PRINT("") -> variable` functionality to automatically determine the type (`int`, `string`, or `float`) based on the context.
 - Integrate more APIs (from existing libraries such as `os`, `colorama`, etc.).
 - Create comprehensive documentation.
@@ -39,7 +39,7 @@ and again: <br>
 - Custom `Lumen IDE`
 
 
-Other Links: <br>
+> 🔗 Useful Links: <br>
 CodePulse's Github: https://github.com/davidcallanan <br>
 Wish Logger PY: https://github.com/ImpulseDevMomentum/WishLoggerPY <br>
 Wish Logger JS: https://github.com/ImpulseDevMomentum/WishLoggerJS <br>
