@@ -1,7 +1,7 @@
 {
     "LANG" : {
-        "VERSION": "1.0.2",
+        "VERSION": "1.0.3",
         "EDITOR_ACCESS": true,
-        "BETA_BRANCH": false
+        "BETA_BRANCH": true
     }
 }
