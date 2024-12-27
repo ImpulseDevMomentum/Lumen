@@ -691,10 +691,28 @@ class Parser:
         res.register_advancement()
         self.advance()
 
+        # Dodajemy obsługę operatorów += i -=
+        if self.current_tok.type in (LU_PLUSEQ, LU_MINUSEQ):
+            op_tok = self.current_tok
+            res.register_advancement()
+            self.advance()
+            
+            expr = res.register(self.expr())
+            if res.error: return res
+            
+            # Tworzymy operację dodawania/odejmowania
+            operation = BinOpNode(
+                VarAccessNode(var_name),
+                Token(LU_PLUS if op_tok.type == LU_PLUSEQ else LU_MINUS, pos_start=op_tok.pos_start, pos_end=op_tok.pos_end),
+                expr
+            )
+            
+            return res.success(VarAssignNode(var_name, operation))
+
         if self.current_tok.type != LU_EQ:
             return res.failure(InvalidSyntaxError(
                 self.current_tok.pos_start, self.current_tok.pos_end,
-                "Expected '='"
+                "Expected '=', '+=' or '-='"
             ))
 
         res.register_advancement()
@@ -703,13 +721,12 @@ class Parser:
         if res.error: return res
         return res.success(VarAssignNode(var_name, expr))
 
-    node = res.register(self.bin_op(self.comp_expr, ((LU_KEYWORD, 'AND'), (LU_AMPERSAND, None), (LU_KEYWORD, 'OR'), 
-                                                    LU_PLUSEQ, LU_MINUSEQ)))
+    node = res.register(self.bin_op(self.comp_expr, ((LU_KEYWORD, 'AND'), (LU_KEYWORD, 'OR'))))
 
     if res.error:
         return res.failure(InvalidSyntaxError(
             self.current_tok.pos_start, self.current_tok.pos_end,
-            "Expected 'SET', 'IF', 'FOR', 'WHILE', 'FUNC', int, float, identifier, '+', '-', '+=', '-=', '(', '[', '&', 'AND', 'OR' or 'NOT'"
+            "Expected 'SET', 'IF', 'FOR', 'WHILE', 'FUNC', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
         ))
 
     return res.success(node)
@@ -1278,32 +1295,23 @@ class Parser:
             if not isinstance(left, VarAccessNode):
                 return res.failure(InvalidSyntaxError(
                     op_tok.pos_start, op_tok.pos_end,
-                    f"Operator '{'+=' if op_tok.type == LU_PLUSEQ else '-='} can only be used with variables"
+                    f"Expected variable"
                 ))
             
-            var_name = left.var_name_tok
-            expr = res.register(func_b())
+            right = res.register(func_b())
             if res.error: return res
 
+            # Tworzymy węzeł operacji binarnej z odpowiednim operatorem
             operation = BinOpNode(
                 left,
                 Token(LU_PLUS if op_tok.type == LU_PLUSEQ else LU_MINUS, pos_start=op_tok.pos_start, pos_end=op_tok.pos_end),
-                expr
+                right
             )
             
-            left = VarAssignNode(var_name, operation)
+            # Tworzymy węzeł przypisania z operacją jako wartością
+            left = VarAssignNode(left.var_name_tok, operation)
             continue
 
-        # Istniejąca obsługa operatora &
-        if op_tok.type == LU_AMPERSAND:
-            if not isinstance(left, BinOpNode) and not isinstance(left, VarAccessNode) and not isinstance(left, NumberNode):
-                return res.failure(InvalidSyntaxError(
-                    op_tok.pos_start, op_tok.pos_end,
-                    "Operator '&' can only be used with boolean expressions"
-                ))
-            op_tok = Token(LU_KEYWORD, 'AND', op_tok.pos_start, op_tok.pos_end)
-
-        # Standardowa obsługa operatorów binarnych
         right = res.register(func_b())
         if res.error: return res
         left = BinOpNode(left, op_tok, right)
