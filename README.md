@@ -31,7 +31,7 @@ and again: <br>
 - Add built-in functions: `INT()`, `STR()`, and `FLOAT()`. ☑️
 
 > 😑 Complex Features:
-- Add `"{}"` to PRINT() ( so instead of `PRINT(f"{}")`, you'll be able to use `PRINT("{variable}") without f-strings` ).
+- Add `"{}"` to PRINT() ( so instead of `PRINT(f"{}")`, you'll be able to use `PRINT("{variable}") without f-strings` ). ☑️
 - Integrate more APIs (from existing libraries such as `os`, `colorama`, etc.).
 - Create comprehensive documentation.
 - Develop a way to code custom libraries.
