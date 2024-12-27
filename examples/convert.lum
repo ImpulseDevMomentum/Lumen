@@ -1,0 +1,11 @@
+SET num_str = "123"
+SET num = INT(num_str)
+PRINT(num)
+
+SET float_str = "123.45"
+SET float_num = FLOAT(float_str)
+PRINT(float_num)
+
+SET num_str = "123"
+SET num = INT(num_str)
+PRINT(num + 10)
