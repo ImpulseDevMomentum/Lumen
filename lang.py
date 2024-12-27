@@ -121,6 +121,8 @@ LU_ARROW       = 'ARROW'
 LU_NEWLINE     = 'NEWLINE'
 LU_EOF         = 'EOF'
 LU_AMPERSAND   = 'AMPERSAND'
+LU_PLUSEQ      = 'PLUSEQ'
+LU_MINUSEQ     = 'MINUSEQ'
 
 KEYWORDS = [
   'SET',
@@ -196,16 +198,25 @@ class Lexer:
       elif self.current_char == '"':
         tokens.append(self.make_string())
       elif self.current_char == '+':
-        tokens.append(Token(LU_PLUS, pos_start=self.pos))
-        self.advance()
-      elif self.current_char == '-':
-        if self.pos.idx + 1 < len(self.text) and self.text[self.pos.idx + 1] == '>':
-            tokens.append(Token(LU_ARROW, pos_start=self.pos))
-            self.advance()
-            self.advance()
+        if self.pos.idx + 1 < len(self.text) and self.text[self.pos.idx + 1] == '=':
+          tokens.append(Token(LU_PLUSEQ, pos_start=self.pos))
+          self.advance()
+          self.advance()
         else:
-            tokens.append(Token(LU_MINUS, pos_start=self.pos))
-            self.advance()
+          tokens.append(Token(LU_PLUS, pos_start=self.pos))
+          self.advance()
+      elif self.current_char == '-':
+        if self.pos.idx + 1 < len(self.text) and self.text[self.pos.idx + 1] == '=':
+          tokens.append(Token(LU_MINUSEQ, pos_start=self.pos))
+          self.advance()
+          self.advance()
+        elif self.pos.idx + 1 < len(self.text) and self.text[self.pos.idx + 1] == '>':
+          tokens.append(Token(LU_ARROW, pos_start=self.pos))
+          self.advance()
+          self.advance()
+        else:
+          tokens.append(Token(LU_MINUS, pos_start=self.pos))
+          self.advance()
       elif self.current_char == '*':
         tokens.append(Token(LU_MUL, pos_start=self.pos))
         self.advance()
@@ -692,12 +703,13 @@ class Parser:
         if res.error: return res
         return res.success(VarAssignNode(var_name, expr))
 
-    node = res.register(self.bin_op(self.comp_expr, ((LU_KEYWORD, 'AND'), (LU_AMPERSAND, None), (LU_KEYWORD, 'OR'))))
+    node = res.register(self.bin_op(self.comp_expr, ((LU_KEYWORD, 'AND'), (LU_AMPERSAND, None), (LU_KEYWORD, 'OR'), 
+                                                    LU_PLUSEQ, LU_MINUSEQ)))
 
     if res.error:
         return res.failure(InvalidSyntaxError(
             self.current_tok.pos_start, self.current_tok.pos_end,
-            "Expected 'SET', 'IF', 'FOR', 'WHILE', 'FUNC', int, float, identifier, '+', '-', '(', '[', '&', 'AND', 'OR' or 'NOT'"
+            "Expected 'SET', 'IF', 'FOR', 'WHILE', 'FUNC', int, float, identifier, '+', '-', '+=', '-=', '(', '[', '&', 'AND', 'OR' or 'NOT'"
         ))
 
     return res.success(node)
@@ -1261,41 +1273,28 @@ class Parser:
         res.register_advancement()
         self.advance()
 
-        if op_tok.type == LU_ARROW:
-            if not (isinstance(left, CallNode) and 
-                   isinstance(left.node_to_call, VarAccessNode) and 
-                   left.node_to_call.var_name_tok.value == 'PRINT'):
+        # Obsługa operatorów += i -=
+        if op_tok.type in (LU_PLUSEQ, LU_MINUSEQ):
+            if not isinstance(left, VarAccessNode):
                 return res.failure(InvalidSyntaxError(
                     op_tok.pos_start, op_tok.pos_end,
-                    "Arrow operator can only be used after PRINT"
+                    f"Operator '{'+=' if op_tok.type == LU_PLUSEQ else '-='} can only be used with variables"
                 ))
-
-            if self.current_tok.type != LU_IDENTIFIER:
-                return res.failure(InvalidSyntaxError(
-                    self.current_tok.pos_start, self.current_tok.pos_end,
-                    "Expected identifier after '->'"
-                ))
-                
-            var_name = self.current_tok
-            res.register_advancement()
-            self.advance()
             
-            left = ListNode(
-                [
-                    left,
-                    VarAssignNode(
-                        var_name,
-                        CallNode(
-                            VarAccessNode(Token(LU_IDENTIFIER, 'INPUT_INT', pos_start=left.pos_start)),
-                            []
-                        )
-                    )
-                ],
-                left.pos_start,
-                var_name.pos_end
+            var_name = left.var_name_tok
+            expr = res.register(func_b())
+            if res.error: return res
+
+            operation = BinOpNode(
+                left,
+                Token(LU_PLUS if op_tok.type == LU_PLUSEQ else LU_MINUS, pos_start=op_tok.pos_start, pos_end=op_tok.pos_end),
+                expr
             )
+            
+            left = VarAssignNode(var_name, operation)
             continue
 
+        # Istniejąca obsługa operatora &
         if op_tok.type == LU_AMPERSAND:
             if not isinstance(left, BinOpNode) and not isinstance(left, VarAccessNode) and not isinstance(left, NumberNode):
                 return res.failure(InvalidSyntaxError(
@@ -1304,6 +1303,7 @@ class Parser:
                 ))
             op_tok = Token(LU_KEYWORD, 'AND', op_tok.pos_start, op_tok.pos_end)
 
+        # Standardowa obsługa operatorów binarnych
         right = res.register(func_b())
         if res.error: return res
         left = BinOpNode(left, op_tok, right)
