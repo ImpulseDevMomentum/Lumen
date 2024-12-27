@@ -677,6 +677,33 @@ class Parser:
   def expr(self):
     res = ParseResult()
 
+    # Sprawdzamy czy to jest zmienna z operatorem += lub -=
+    if self.current_tok.type == LU_IDENTIFIER:
+        var_name = self.current_tok
+        res.register_advancement()
+        self.advance()
+
+        if self.current_tok.type in (LU_PLUSEQ, LU_MINUSEQ):
+            op_tok = self.current_tok
+            res.register_advancement()
+            self.advance()
+            
+            expr = res.register(self.expr())
+            if res.error: return res
+            
+            # Tworzymy operację dodawania/odejmowania
+            operation = BinOpNode(
+                VarAccessNode(var_name),
+                Token(LU_PLUS if op_tok.type == LU_PLUSEQ else LU_MINUS, pos_start=op_tok.pos_start, pos_end=op_tok.pos_end),
+                expr
+            )
+            
+            return res.success(VarAssignNode(var_name, operation))
+
+        # Jeśli to nie += lub -=, cofamy się do początku
+        self.tok_idx -= 1
+        self.update_current_tok()
+
     if self.current_tok.matches(LU_KEYWORD, 'SET'):
         res.register_advancement()
         self.advance()
@@ -721,7 +748,7 @@ class Parser:
         if res.error: return res
         return res.success(VarAssignNode(var_name, expr))
 
-    node = res.register(self.bin_op(self.comp_expr, ((LU_KEYWORD, 'AND'), (LU_KEYWORD, 'OR'))))
+    node = res.register(self.bin_op(self.comp_expr, ((LU_KEYWORD, 'AND'), (LU_KEYWORD, 'OR'), (LU_AMPERSAND, None))))
 
     if res.error:
         return res.failure(InvalidSyntaxError(
@@ -819,19 +846,38 @@ class Parser:
     tok = self.current_tok
 
     if tok.type in (LU_INT, LU_FLOAT):
-      res.register_advancement()
-      self.advance()
-      return res.success(NumberNode(tok))
+        res.register_advancement()
+        self.advance()
+        return res.success(NumberNode(tok))
 
     elif tok.type == LU_STRING:
-      res.register_advancement()
-      self.advance()
-      return res.success(StringNode(tok))
+        res.register_advancement()
+        self.advance()
+        return res.success(StringNode(tok))
 
     elif tok.type == LU_IDENTIFIER:
-      res.register_advancement()
-      self.advance()
-      return res.success(VarAccessNode(tok))
+        res.register_advancement()
+        self.advance()
+        
+        # Sprawdzamy czy następny token to += lub -=
+        if self.current_tok.type in (LU_PLUSEQ, LU_MINUSEQ):
+            op_tok = self.current_tok
+            res.register_advancement()
+            self.advance()
+            
+            expr = res.register(self.expr())
+            if res.error: return res
+            
+            # Tworzymy operację dodawania/odejmowania
+            operation = BinOpNode(
+                VarAccessNode(tok),
+                Token(LU_PLUS if op_tok.type == LU_PLUSEQ else LU_MINUS, pos_start=op_tok.pos_start, pos_end=op_tok.pos_end),
+                expr
+            )
+            
+            return res.success(VarAssignNode(tok, operation))
+            
+        return res.success(VarAccessNode(tok))
 
     elif tok.type == LU_LPAREN:
       res.register_advancement()
@@ -1597,6 +1643,46 @@ class String(Value):
   def __repr__(self):
     return f'"{self.value}"'
 
+  def get_comparison_eq(self, other):
+    if isinstance(other, String):
+      return Number(int(self.value == other.value)).set_context(self.context), None
+    return None, Value.illegal_operation(self, other)
+
+  def get_comparison_ne(self, other):
+    if isinstance(other, String):
+      return Number(int(self.value != other.value)).set_context(self.context), None
+    return None, Value.illegal_operation(self, other)
+
+  def get_comparison_lt(self, other):
+    if isinstance(other, String):
+      return Number(int(self.value < other.value)).set_context(self.context), None
+    return None, Value.illegal_operation(self, other)
+
+  def get_comparison_gt(self, other):
+    if isinstance(other, String):
+      return Number(int(self.value > other.value)).set_context(self.context), None
+    return None, Value.illegal_operation(self, other)
+
+  def get_comparison_lte(self, other):
+    if isinstance(other, String):
+      return Number(int(self.value <= other.value)).set_context(self.context), None
+    return None, Value.illegal_operation(self, other)
+
+  def get_comparison_gte(self, other):
+    if isinstance(other, String):
+      return Number(int(self.value >= other.value)).set_context(self.context), None
+    return None, Value.illegal_operation(self, other)
+
+  def anded_by(self, other):
+    if isinstance(other, Number):
+      return Number(int(bool(self.value) and other.value)).set_context(self.context), None
+    return None, Value.illegal_operation(self, other)
+
+  def ored_by(self, other):
+    if isinstance(other, Number):
+      return Number(int(bool(self.value) or other.value)).set_context(self.context), None
+    return None, Value.illegal_operation(self, other)
+
 class List(Value):
   def __init__(self, elements):
     super().__init__()
@@ -2120,7 +2206,7 @@ class Interpreter:
       result, error = left.get_comparison_lte(right)
     elif node.op_tok.type == LU_GTE:
       result, error = left.get_comparison_gte(right)
-    elif node.op_tok.matches(LU_KEYWORD, 'AND'):
+    elif node.op_tok.matches(LU_KEYWORD, 'AND') or node.op_tok.type == LU_AMPERSAND:
       result, error = left.anded_by(right)
     elif node.op_tok.matches(LU_KEYWORD, 'OR'):
       result, error = left.ored_by(right)
