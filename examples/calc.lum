@@ -6,13 +6,16 @@ FUNC show_menu()
     PRINT("4. Division")
     PRINT("5. Power")
     PRINT("0. Exit")
-    PRINT("Choose option (0-5): ") -> choice
+    PRINT("Choose option (0-5): ")
+    SET choice = INPUT_INT()
     BACK choice
 STOP
 
 FUNC get_numbers()
-    PRINT("Enter first number: ") -> num1
-    PRINT("Enter second number: ") -> num2
+    PRINT("Enter first number: ")
+    SET num1 = INPUT_INT()
+    PRINT("Enter second number: ")
+    SET num2 = INPUT_INT()
     BACK [num1, num2]
 STOP
 
