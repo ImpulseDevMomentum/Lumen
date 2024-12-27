@@ -120,6 +120,7 @@ LU_COMMA       = 'COMMA'
 LU_ARROW       = 'ARROW'
 LU_NEWLINE     = 'NEWLINE'
 LU_EOF         = 'EOF'
+LU_AMPERSAND   = 'AMPERSAND'
 
 KEYWORDS = [
   'SET',
@@ -238,6 +239,9 @@ class Lexer:
         tokens.append(self.make_greater_than())
       elif self.current_char == ',':
         tokens.append(Token(LU_COMMA, pos_start=self.pos))
+        self.advance()
+      elif self.current_char == '&':
+        tokens.append(Token(LU_AMPERSAND, pos_start=self.pos))
         self.advance()
       else:
         pos_start = self.pos.copy()
@@ -688,12 +692,12 @@ class Parser:
         if res.error: return res
         return res.success(VarAssignNode(var_name, expr))
 
-    node = res.register(self.bin_op(self.comp_expr, ((LU_KEYWORD, 'AND'), (LU_KEYWORD, 'OR'), LU_ARROW)))
+    node = res.register(self.bin_op(self.comp_expr, ((LU_KEYWORD, 'AND'), (LU_AMPERSAND, None), (LU_KEYWORD, 'OR'))))
 
     if res.error:
         return res.failure(InvalidSyntaxError(
             self.current_tok.pos_start, self.current_tok.pos_end,
-            "Expected 'SET', 'IF', 'FOR', 'WHILE', 'FUNC', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
+            "Expected 'SET', 'IF', 'FOR', 'WHILE', 'FUNC', int, float, identifier, '+', '-', '(', '[', '&', 'AND', 'OR' or 'NOT'"
         ))
 
     return res.success(node)
@@ -1291,6 +1295,14 @@ class Parser:
                 var_name.pos_end
             )
             continue
+
+        if op_tok.type == LU_AMPERSAND:
+            if not isinstance(left, BinOpNode) and not isinstance(left, VarAccessNode) and not isinstance(left, NumberNode):
+                return res.failure(InvalidSyntaxError(
+                    op_tok.pos_start, op_tok.pos_end,
+                    "Operator '&' can only be used with boolean expressions"
+                ))
+            op_tok = Token(LU_KEYWORD, 'AND', op_tok.pos_start, op_tok.pos_end)
 
         right = res.register(func_b())
         if res.error: return res
@@ -1905,76 +1917,54 @@ class BuiltInFunction(BaseFunction):
   def execute_to_int(self, exec_ctx):
     value = exec_ctx.symbol_table.get("value")
     try:
-        if isinstance(value, String):
-            try:
-                return RTResult().success(Number(int(value.value)))
-            except ValueError:
-                return RTResult().failure(RTError(
-                    self.pos_start, self.pos_end,
-                    f"Cannot convert string '{value.value}' to integer - invalid format",
-                    exec_ctx
-                ))
-        elif isinstance(value, Number):
-            return RTResult().success(Number(int(value.value)))
-        else:
-            return RTResult().failure(RTError(
-                self.pos_start, self.pos_end,
-                f"Cannot convert type '{type(value).__name__}' to integer. Only strings and numbers are supported",
-                exec_ctx
-            ))
-    except Exception as e:
+      if isinstance(value, String):
+        return RTResult().success(Number(int(value.value)))
+      elif isinstance(value, Number):
+        return RTResult().success(Number(int(value.value)))
+      else:
         return RTResult().failure(RTError(
-            self.pos_start, self.pos_end,
-            f"Error during integer conversion: {str(e)}",
-            exec_ctx
+          self.pos_start, self.pos_end,
+          f"Cannot convert {type(value).__name__} to integer",
+          exec_ctx
         ))
-  execute_to_int.arg_names = ["value"]
+    except ValueError:
+      return RTResult().failure(RTError(
+        self.pos_start, self.pos_end,
+        f"Could not convert '{value.value}' to integer",
+        exec_ctx
+      ))
+    execute_to_int.arg_names = ["value"]
 
   def execute_to_float(self, exec_ctx):
     value = exec_ctx.symbol_table.get("value")
     try:
-        if isinstance(value, String):
-            try:
-                return RTResult().success(Number(float(value.value)))
-            except ValueError:
-                return RTResult().failure(RTError(
-                    self.pos_start, self.pos_end,
-                    f"Cannot convert string '{value.value}' to float - invalid format",
-                    exec_ctx
-                ))
-        elif isinstance(value, Number):
-            return RTResult().success(Number(float(value.value)))
-        else:
-            return RTResult().failure(RTError(
-                self.pos_start, self.pos_end,
-                f"Cannot convert type '{type(value).__name__}' to float. Only strings and numbers are supported",
-                exec_ctx
-            ))
-    except Exception as e:
+      if isinstance(value, String):
+        return RTResult().success(Number(float(value.value)))
+      elif isinstance(value, Number):
+        return RTResult().success(Number(float(value.value)))
+      else:
         return RTResult().failure(RTError(
-            self.pos_start, self.pos_end,
-            f"Error during float conversion: {str(e)}",
-            exec_ctx
+          self.pos_start, self.pos_end,
+          f"Cannot convert {type(value).__name__} to float",
+          exec_ctx
         ))
-  execute_to_float.arg_names = ["value"]
+    except ValueError:
+      return RTResult().failure(RTError(
+        self.pos_start, self.pos_end,
+        f"Could not convert '{value.value}' to float",
+        exec_ctx
+      ))
+    execute_to_float.arg_names = ["value"]
 
   def execute_to_str(self, exec_ctx):
     value = exec_ctx.symbol_table.get("value")
-    try:
-        if isinstance(value, (Number, String, List)):
-            return RTResult().success(String(str(value)))
-        else:
-            return RTResult().failure(RTError(
-                self.pos_start, self.pos_end,
-                f"Cannot convert type '{type(value).__name__}' to string. Only numbers, strings, and lists are supported",
-                exec_ctx
-            ))
-    except Exception as e:
-        return RTResult().failure(RTError(
-            self.pos_start, self.pos_end,
-            f"Error during string conversion: {str(e)}",
-            exec_ctx
-        ))
+    if isinstance(value, (Number, String, List)):
+      return RTResult().success(String(str(value)))
+    return RTResult().failure(RTError(
+      self.pos_start, self.pos_end,
+      f"Cannot convert {type(value).__name__} to string",
+      exec_ctx
+    ))
   execute_to_str.arg_names = ["value"]
 
 BuiltInFunction.print       = BuiltInFunction("print")
