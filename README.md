@@ -29,7 +29,7 @@ and again: <br>
 - Add `l"{}"` to PRINT() ( so instead of `PRINT(f"{}")`, you'll be able to use `PRINT(l"{}")` ).
 - Add support for `+=` and `-=` operators.
 - Introduce `&` as an alternative for `AND` (without replacing `AND`).
-- Add built-in functions: `INT()`, `STR()`, and `FLOAT()`.
+- Add built-in functions: `INT()`, `STR()`, and `FLOAT()`. ☑️
 
 > 😑 Complex Features:
 - Enhance `PRINT("") -> variable` functionality to automatically determine the type (`int`, `string`, or `float`) based on the context.
