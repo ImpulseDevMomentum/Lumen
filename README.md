@@ -36,7 +36,7 @@ and again: <br>
 - Integrate more APIs (from existing libraries such as `os`, `colorama`, etc.).
 - Create comprehensive documentation.
 - Develop a way to code custom libraries.
-- Custom `Lumen IDE`
+- Custom `Lumen IDE` ☑️
 
 
 > 🔗 Useful Links: <br>
