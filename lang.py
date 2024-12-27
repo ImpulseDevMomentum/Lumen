@@ -1919,55 +1919,52 @@ class BuiltInFunction(BaseFunction):
   def execute_to_int(self, exec_ctx):
     value = exec_ctx.symbol_table.get("value")
     try:
-      if isinstance(value, String):
-        return RTResult().success(Number(int(value.value)))
-      elif isinstance(value, Number):
-        return RTResult().success(Number(int(value.value)))
-      else:
-        return RTResult().failure(RTError(
-          self.pos_start, self.pos_end,
-          f"Cannot convert {type(value).__name__} to integer",
-          exec_ctx
-        ))
+        if isinstance(value, String):
+            return RTResult().success(Number(int(value.value)))
+        elif isinstance(value, Number):
+            return RTResult().success(Number(int(value.value)))
+        else:
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                f"Cannot convert {type(value).__name__} to integer",
+                exec_ctx
+            ))
     except ValueError:
-      return RTResult().failure(RTError(
-        self.pos_start, self.pos_end,
-        f"Could not convert '{value.value}' to integer",
-        exec_ctx
-      ))
-    execute_to_int.arg_names = ["value"]
+        return RTResult().failure(RTError(
+            self.pos_start, self.pos_end,
+            f"Could not convert '{value.value}' to integer",
+            exec_ctx
+        ))
 
   def execute_to_float(self, exec_ctx):
     value = exec_ctx.symbol_table.get("value")
     try:
-      if isinstance(value, String):
-        return RTResult().success(Number(float(value.value)))
-      elif isinstance(value, Number):
-        return RTResult().success(Number(float(value.value)))
-      else:
-        return RTResult().failure(RTError(
-          self.pos_start, self.pos_end,
-          f"Cannot convert {type(value).__name__} to float",
-          exec_ctx
-        ))
+        if isinstance(value, String):
+            return RTResult().success(Number(float(value.value)))
+        elif isinstance(value, Number):
+            return RTResult().success(Number(float(value.value)))
+        else:
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                f"Cannot convert {type(value).__name__} to float",
+                exec_ctx
+            ))
     except ValueError:
-      return RTResult().failure(RTError(
-        self.pos_start, self.pos_end,
-        f"Could not convert '{value.value}' to float",
-        exec_ctx
-      ))
-    execute_to_float.arg_names = ["value"]
+        return RTResult().failure(RTError(
+            self.pos_start, self.pos_end,
+            f"Could not convert '{value.value}' to float",
+            exec_ctx
+        ))
 
   def execute_to_str(self, exec_ctx):
     value = exec_ctx.symbol_table.get("value")
     if isinstance(value, (Number, String, List)):
-      return RTResult().success(String(str(value)))
+        return RTResult().success(String(str(value)))
     return RTResult().failure(RTError(
-      self.pos_start, self.pos_end,
-      f"Cannot convert {type(value).__name__} to string",
-      exec_ctx
+        self.pos_start, self.pos_end,
+        f"Cannot convert {type(value).__name__} to string",
+        exec_ctx
     ))
-  execute_to_str.arg_names = ["value"]
 
 BuiltInFunction.print       = BuiltInFunction("print")
 BuiltInFunction.print_ret   = BuiltInFunction("print_ret")
@@ -1986,6 +1983,11 @@ BuiltInFunction.run					= BuiltInFunction("run")
 BuiltInFunction.to_int      = BuiltInFunction("to_int")
 BuiltInFunction.to_float   = BuiltInFunction("to_float")
 BuiltInFunction.to_str     = BuiltInFunction("to_str")
+
+# Definicje arg_names dla metod konwersji
+BuiltInFunction.execute_to_int.arg_names = ["value"]
+BuiltInFunction.execute_to_float.arg_names = ["value"]
+BuiltInFunction.execute_to_str.arg_names = ["value"]
 
 ###########
 # CONTEXT #
