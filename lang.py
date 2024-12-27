@@ -6,6 +6,7 @@ from errorcomp import *
 from colorama import init, Fore, Style
 import string, os, math
 import random
+import re
 
 ########
 # CONS #
@@ -1674,6 +1675,70 @@ class String(Value):
       return Number(int(bool(self.value) or other.value)).set_context(self.context), None
     return None, Value.illegal_operation(self, other)
 
+  def formatted(self, exec_ctx):
+    try:
+        result = self.value
+        if '{' in result and '}' in result:
+            current_ctx = exec_ctx
+            variables = {}
+            while current_ctx:
+                variables.update(current_ctx.symbol_table.symbols)
+                current_ctx = current_ctx.parent
+
+            matches = re.finditer(r'\{([^}]+)\}', result)
+            replacements = []
+            
+            for match in matches:
+                full_match = match.group(0)
+                placeholder = match.group(1)
+                
+                if ':' in placeholder:
+                    var_name, format_spec = placeholder.split(':')
+                    var_value = variables.get(var_name)
+                    if var_value is None:
+                        return None, RTError(
+                            self.pos_start, self.pos_end,
+                            f"Variable '{var_name}' is not defined",
+                            exec_ctx
+                        )
+                    
+                    if isinstance(var_value, Number):
+                        if format_spec.endswith('f'):
+                            try:
+                                precision = int(format_spec[1:-1])
+                                formatted_value = f"{float(var_value.value):.{precision}f}"
+                            except:
+                                formatted_value = str(var_value.value)
+                        else:
+                            formatted_value = str(var_value.value)
+                    else:
+                        formatted_value = str(var_value)
+                    replacements.append((full_match, formatted_value))
+                else:
+                    var_value = variables.get(placeholder)
+                    if var_value is None:
+                        return None, RTError(
+                            self.pos_start, self.pos_end,
+                            f"Variable '{placeholder}' is not defined",
+                            exec_ctx
+                        )
+                    if isinstance(var_value, Number):
+                        formatted_value = str(var_value.value)
+                    else:
+                        formatted_value = str(var_value)
+                    replacements.append((full_match, formatted_value))
+            
+            for old, new in replacements:
+                result = result.replace(old, new)
+                
+        return String(result).set_context(self.context), None
+    except Exception as e:
+        return None, RTError(
+            self.pos_start, self.pos_end,
+            f'Error in string formatting: {str(e)}',
+            exec_ctx
+        )
+
 class List(Value):
   def __init__(self, elements):
     super().__init__()
@@ -1838,7 +1903,16 @@ class BuiltInFunction(BaseFunction):
   #####################################
 
   def execute_print(self, exec_ctx):
-    print(str(exec_ctx.symbol_table.get('value')))
+    value = exec_ctx.symbol_table.get('value')
+    
+    if isinstance(value, String) and '{' in value.value and '}' in value.value:
+        result, error = value.formatted(exec_ctx)
+        if error: 
+            return RTResult().failure(error)
+        print(str(result))
+    else:
+        print(str(value))
+        
     return RTResult().success(Number.null)
   execute_print.arg_names = ['value']
   
@@ -2135,6 +2209,22 @@ class BuiltInFunction(BaseFunction):
     return RTResult().success(random.choice(list_.elements))
   execute_random_choice.arg_names = ["list"]
 
+  def execute_format(self, exec_ctx):
+    string = exec_ctx.symbol_table.get("string")
+    
+    if not isinstance(string, String):
+      return RTResult().failure(RTError(
+        self.pos_start, self.pos_end,
+        "First argument must be string",
+        exec_ctx
+      ))
+
+    result, error = string.formatted(exec_ctx)
+    if error: return RTResult().failure(error)
+    
+    return RTResult().success(result)
+  execute_format.arg_names = ["string"]
+
 BuiltInFunction.print       = BuiltInFunction("print")
 BuiltInFunction.print_ret   = BuiltInFunction("print_ret")
 BuiltInFunction.input       = BuiltInFunction("input")
@@ -2155,6 +2245,7 @@ BuiltInFunction.to_str     = BuiltInFunction("to_str")
 BuiltInFunction.random_int    = BuiltInFunction("random_int")
 BuiltInFunction.random_float  = BuiltInFunction("random_float")
 BuiltInFunction.random_choice = BuiltInFunction("random_choice")
+BuiltInFunction.format      = BuiltInFunction("format")
 
 BuiltInFunction.execute_to_int.arg_names = ["value"]
 BuiltInFunction.execute_to_float.arg_names = ["value"]
@@ -2485,6 +2576,7 @@ global_symbol_table.set("STR", BuiltInFunction.to_str)
 global_symbol_table.set("RANDOM_INT", BuiltInFunction.random_int)
 global_symbol_table.set("RANDOM_FLOAT", BuiltInFunction.random_float)
 global_symbol_table.set("RANDOM_CHOICE", BuiltInFunction.random_choice)
+global_symbol_table.set("FORMAT", BuiltInFunction.format)
 
 def run(fn, text):
   # Generate tokens
