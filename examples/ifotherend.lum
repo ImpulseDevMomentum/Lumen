@@ -1,0 +1,26 @@
+SET age = 18
+
+IF age < 13 THEN
+    PRINT("You are a child")
+OTHER age < 18 THEN
+    PRINT("You are a teenager")
+OTHER age < 60 THEN
+    PRINT("You are an adult")
+ELSE
+    PRINT("You are a senior")
+STOP
+
+#######################################
+
+SET age = 18
+SET hasID = FALSE
+
+IF age >= 18 THEN
+    IF hasID THEN
+        PRINT("You can enter")
+    ELSE
+        PRINT("Please show your ID")
+    STOP
+ELSE
+    PRINT("You are too young")
+STOP
