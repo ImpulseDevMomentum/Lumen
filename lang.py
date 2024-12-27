@@ -5,6 +5,7 @@
 from errorcomp import *
 from colorama import init, Fore, Style
 import string, os, math
+import random
 
 ########
 # CONS #
@@ -677,7 +678,6 @@ class Parser:
   def expr(self):
     res = ParseResult()
 
-    # Sprawdzamy czy to jest zmienna z operatorem += lub -=
     if self.current_tok.type == LU_IDENTIFIER:
         var_name = self.current_tok
         res.register_advancement()
@@ -691,7 +691,6 @@ class Parser:
             expr = res.register(self.expr())
             if res.error: return res
             
-            # Tworzymy operację dodawania/odejmowania
             operation = BinOpNode(
                 VarAccessNode(var_name),
                 Token(LU_PLUS if op_tok.type == LU_PLUSEQ else LU_MINUS, pos_start=op_tok.pos_start, pos_end=op_tok.pos_end),
@@ -700,7 +699,6 @@ class Parser:
             
             return res.success(VarAssignNode(var_name, operation))
 
-        # Jeśli to nie += lub -=, cofamy się do początku
         self.tok_idx -= 1
         self.update_current_tok()
 
@@ -718,7 +716,6 @@ class Parser:
         res.register_advancement()
         self.advance()
 
-        # Dodajemy obsługę operatorów += i -=
         if self.current_tok.type in (LU_PLUSEQ, LU_MINUSEQ):
             op_tok = self.current_tok
             res.register_advancement()
@@ -727,7 +724,6 @@ class Parser:
             expr = res.register(self.expr())
             if res.error: return res
             
-            # Tworzymy operację dodawania/odejmowania
             operation = BinOpNode(
                 VarAccessNode(var_name),
                 Token(LU_PLUS if op_tok.type == LU_PLUSEQ else LU_MINUS, pos_start=op_tok.pos_start, pos_end=op_tok.pos_end),
@@ -859,7 +855,6 @@ class Parser:
         res.register_advancement()
         self.advance()
         
-        # Sprawdzamy czy następny token to += lub -=
         if self.current_tok.type in (LU_PLUSEQ, LU_MINUSEQ):
             op_tok = self.current_tok
             res.register_advancement()
@@ -868,7 +863,6 @@ class Parser:
             expr = res.register(self.expr())
             if res.error: return res
             
-            # Tworzymy operację dodawania/odejmowania
             operation = BinOpNode(
                 VarAccessNode(tok),
                 Token(LU_PLUS if op_tok.type == LU_PLUSEQ else LU_MINUS, pos_start=op_tok.pos_start, pos_end=op_tok.pos_end),
@@ -1336,7 +1330,6 @@ class Parser:
         res.register_advancement()
         self.advance()
 
-        # Obsługa operatorów += i -=
         if op_tok.type in (LU_PLUSEQ, LU_MINUSEQ):
             if not isinstance(left, VarAccessNode):
                 return res.failure(InvalidSyntaxError(
@@ -1347,14 +1340,12 @@ class Parser:
             right = res.register(func_b())
             if res.error: return res
 
-            # Tworzymy węzeł operacji binarnej z odpowiednim operatorem
             operation = BinOpNode(
                 left,
                 Token(LU_PLUS if op_tok.type == LU_PLUSEQ else LU_MINUS, pos_start=op_tok.pos_start, pos_end=op_tok.pos_end),
                 right
             )
             
-            # Tworzymy węzeł przypisania z operacją jako wartością
             left = VarAssignNode(left.var_name_tok, operation)
             continue
 
@@ -1856,20 +1847,42 @@ class BuiltInFunction(BaseFunction):
   execute_print_ret.arg_names = ['value']
   
   def execute_input(self, exec_ctx):
-    text = input()
+    prompt = exec_ctx.symbol_table.get("prompt")
+    if prompt:
+        if not isinstance(prompt, String):
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                "Prompt must be a string",
+                exec_ctx
+            ))
+        text = input(prompt.value)
+    else:
+        text = input()
     return RTResult().success(String(text))
-  execute_input.arg_names = []
+  execute_input.arg_names = ["prompt"]
 
   def execute_input_int(self, exec_ctx):
+    prompt = exec_ctx.symbol_table.get("prompt")
+    if prompt:
+        if not isinstance(prompt, String):
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                "Prompt must be a string",
+                exec_ctx
+            ))
+    
     while True:
-      text = input()
-      try:
-        number = int(text)
-        break
-      except ValueError:
-        print(f"'{text}' must be an integer. Try again!")
+        try:
+            if prompt:
+                text = input(prompt.value)
+            else:
+                text = input()
+            number = int(text)
+            break
+        except ValueError:
+            print(f"'{text}' must be an integer. Try again!")
     return RTResult().success(Number(number))
-  execute_input_int.arg_names = []
+  execute_input_int.arg_names = ["prompt"]
 
   def execute_clear(self, exec_ctx):
     os.system('cls' if os.name == 'nt' else 'cls') 
@@ -2060,6 +2073,68 @@ class BuiltInFunction(BaseFunction):
         exec_ctx
     ))
 
+  def execute_random_int(self, exec_ctx):
+    min_val = exec_ctx.symbol_table.get("min")
+    max_val = exec_ctx.symbol_table.get("max")
+
+    if not isinstance(min_val, Number):
+        return RTResult().failure(RTError(
+            self.pos_start, self.pos_end,
+            "First argument must be a number",
+            exec_ctx
+        ))
+    
+    if not isinstance(max_val, Number):
+        return RTResult().failure(RTError(
+            self.pos_start, self.pos_end,
+            "Second argument must be a number",
+            exec_ctx
+        ))
+
+    return RTResult().success(Number(random.randint(int(min_val.value), int(max_val.value))))
+  execute_random_int.arg_names = ["min", "max"]
+
+  def execute_random_float(self, exec_ctx):
+    min_val = exec_ctx.symbol_table.get("min")
+    max_val = exec_ctx.symbol_table.get("max")
+
+    if not isinstance(min_val, Number):
+        return RTResult().failure(RTError(
+            self.pos_start, self.pos_end,
+            "First argument must be a number",
+            exec_ctx
+        ))
+    
+    if not isinstance(max_val, Number):
+        return RTResult().failure(RTError(
+            self.pos_start, self.pos_end,
+            "Second argument must be a number",
+            exec_ctx
+        ))
+
+    return RTResult().success(Number(random.uniform(float(min_val.value), float(max_val.value))))
+  execute_random_float.arg_names = ["min", "max"]
+
+  def execute_random_choice(self, exec_ctx):
+    list_ = exec_ctx.symbol_table.get("list")
+
+    if not isinstance(list_, List):
+        return RTResult().failure(RTError(
+            self.pos_start, self.pos_end,
+            "Argument must be a list",
+            exec_ctx
+        ))
+
+    if len(list_.elements) == 0:
+        return RTResult().failure(RTError(
+            self.pos_start, self.pos_end,
+            "List cannot be empty",
+            exec_ctx
+        ))
+
+    return RTResult().success(random.choice(list_.elements))
+  execute_random_choice.arg_names = ["list"]
+
 BuiltInFunction.print       = BuiltInFunction("print")
 BuiltInFunction.print_ret   = BuiltInFunction("print_ret")
 BuiltInFunction.input       = BuiltInFunction("input")
@@ -2077,8 +2152,10 @@ BuiltInFunction.run					= BuiltInFunction("run")
 BuiltInFunction.to_int      = BuiltInFunction("to_int")
 BuiltInFunction.to_float   = BuiltInFunction("to_float")
 BuiltInFunction.to_str     = BuiltInFunction("to_str")
+BuiltInFunction.random_int    = BuiltInFunction("random_int")
+BuiltInFunction.random_float  = BuiltInFunction("random_float")
+BuiltInFunction.random_choice = BuiltInFunction("random_choice")
 
-# Definicje arg_names dla metod konwersji
 BuiltInFunction.execute_to_int.arg_names = ["value"]
 BuiltInFunction.execute_to_float.arg_names = ["value"]
 BuiltInFunction.execute_to_str.arg_names = ["value"]
@@ -2405,6 +2482,9 @@ global_symbol_table.set("RUN", BuiltInFunction.run)
 global_symbol_table.set("INT", BuiltInFunction.to_int)
 global_symbol_table.set("FLOAT", BuiltInFunction.to_float)
 global_symbol_table.set("STR", BuiltInFunction.to_str)
+global_symbol_table.set("RANDOM_INT", BuiltInFunction.random_int)
+global_symbol_table.set("RANDOM_FLOAT", BuiltInFunction.random_float)
+global_symbol_table.set("RANDOM_CHOICE", BuiltInFunction.random_choice)
 
 def run(fn, text):
   # Generate tokens
