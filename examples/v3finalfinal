@@ -1,0 +1,78 @@
+SET number = 10
+SET text = "Hello, Lumen!"
+SET list = [1, 2, 3, 4, 5]
+
+PRINT("=== Basic operations ===")
+PRINT(text)
+number += 5
+PRINT(number)
+
+PRINT("\n=== List operations ===")
+APPEND(list, 6)
+PRINT(list)
+POP(list, 0)
+PRINT(list)
+PRINT("List length: ")
+PRINT(LEN(list))
+
+PRINT("\n=== Type conversions ===")
+SET str_num = "123"
+SET converted = INT(str_num)
+PRINT("Converted string to number: ")
+PRINT(converted)
+PRINT("Back to string: ")
+PRINT(STR(converted))
+
+PRINT("\n=== Loops and conditions ===")
+SET i = 0
+
+WHILE i < 5 THEN
+    IF i == 3 & IS_NUM(i) THEN
+        PRINT("Found three!")
+    ELSE
+        PRINT(i)
+    STOP
+    i += 1
+STOP
+
+PRINT("\n=== Functions ===")
+FUNC calculate(x, y) -> x * y + 10
+
+SET result = calculate(5, 3)
+PRINT("Function result: ")
+PRINT(result)
+
+PRINT("\n=== Complex conditions ===")
+SET age = 25
+SET name = "John"
+
+IF age > 18 & age < 30 & name == "John" THEN
+    PRINT("Young adult John!")
+ELSE IF age > 30 & name == "John" THEN
+    PRINT("Adult John!")
+ELSE
+    PRINT("Not John or different age group")
+STOP
+
+PRINT("\n=== FOR loop ===")
+FOR x = 0 TO 5 STEP 1 THEN
+    IF x == 2 THEN
+        PRINT("Two!")
+    ELSE
+        PRINT(x)
+    STOP
+STOP
+
+PRINT("\n=== String operations ===")
+SET first_name = "Hello"
+SET last_name = " World"
+SET full_name = first_name + last_name
+PRINT(full_name)
+
+PRINT("\n=== Comparisons ===")
+SET a = 5
+SET b = 10
+PRINT("Comparisons results:")
+IF a < b & a != b & b > a THEN
+    PRINT("All conditions met!")
+STOP
