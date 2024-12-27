@@ -1902,6 +1902,81 @@ class BuiltInFunction(BaseFunction):
     return RTResult().success(Number.null)
   execute_run.arg_names = ["fn"]
 
+  def execute_to_int(self, exec_ctx):
+    value = exec_ctx.symbol_table.get("value")
+    try:
+        if isinstance(value, String):
+            try:
+                return RTResult().success(Number(int(value.value)))
+            except ValueError:
+                return RTResult().failure(RTError(
+                    self.pos_start, self.pos_end,
+                    f"Cannot convert string '{value.value}' to integer - invalid format",
+                    exec_ctx
+                ))
+        elif isinstance(value, Number):
+            return RTResult().success(Number(int(value.value)))
+        else:
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                f"Cannot convert type '{type(value).__name__}' to integer. Only strings and numbers are supported",
+                exec_ctx
+            ))
+    except Exception as e:
+        return RTResult().failure(RTError(
+            self.pos_start, self.pos_end,
+            f"Error during integer conversion: {str(e)}",
+            exec_ctx
+        ))
+  execute_to_int.arg_names = ["value"]
+
+  def execute_to_float(self, exec_ctx):
+    value = exec_ctx.symbol_table.get("value")
+    try:
+        if isinstance(value, String):
+            try:
+                return RTResult().success(Number(float(value.value)))
+            except ValueError:
+                return RTResult().failure(RTError(
+                    self.pos_start, self.pos_end,
+                    f"Cannot convert string '{value.value}' to float - invalid format",
+                    exec_ctx
+                ))
+        elif isinstance(value, Number):
+            return RTResult().success(Number(float(value.value)))
+        else:
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                f"Cannot convert type '{type(value).__name__}' to float. Only strings and numbers are supported",
+                exec_ctx
+            ))
+    except Exception as e:
+        return RTResult().failure(RTError(
+            self.pos_start, self.pos_end,
+            f"Error during float conversion: {str(e)}",
+            exec_ctx
+        ))
+  execute_to_float.arg_names = ["value"]
+
+  def execute_to_str(self, exec_ctx):
+    value = exec_ctx.symbol_table.get("value")
+    try:
+        if isinstance(value, (Number, String, List)):
+            return RTResult().success(String(str(value)))
+        else:
+            return RTResult().failure(RTError(
+                self.pos_start, self.pos_end,
+                f"Cannot convert type '{type(value).__name__}' to string. Only numbers, strings, and lists are supported",
+                exec_ctx
+            ))
+    except Exception as e:
+        return RTResult().failure(RTError(
+            self.pos_start, self.pos_end,
+            f"Error during string conversion: {str(e)}",
+            exec_ctx
+        ))
+  execute_to_str.arg_names = ["value"]
+
 BuiltInFunction.print       = BuiltInFunction("print")
 BuiltInFunction.print_ret   = BuiltInFunction("print_ret")
 BuiltInFunction.input       = BuiltInFunction("input")
@@ -1916,6 +1991,9 @@ BuiltInFunction.pop         = BuiltInFunction("pop")
 BuiltInFunction.extend      = BuiltInFunction("extend")
 BuiltInFunction.len					= BuiltInFunction("len")
 BuiltInFunction.run					= BuiltInFunction("run")
+BuiltInFunction.to_int      = BuiltInFunction("to_int")
+BuiltInFunction.to_float   = BuiltInFunction("to_float")
+BuiltInFunction.to_str     = BuiltInFunction("to_str")
 
 ###########
 # CONTEXT #
@@ -2234,6 +2312,9 @@ global_symbol_table.set("POP", BuiltInFunction.pop)
 global_symbol_table.set("EXTEND", BuiltInFunction.extend)
 global_symbol_table.set("LEN", BuiltInFunction.len)
 global_symbol_table.set("RUN", BuiltInFunction.run)
+global_symbol_table.set("INT", BuiltInFunction.to_int)
+global_symbol_table.set("FLOAT", BuiltInFunction.to_float)
+global_symbol_table.set("STR", BuiltInFunction.to_str)
 
 def run(fn, text):
   # Generate tokens
