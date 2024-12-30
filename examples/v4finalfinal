@@ -1,0 +1,76 @@
+SET number = 42
+SET text = "Hello"
+SET decimal = 3.14
+SET is_true = TRUE
+SET is_false = FALSE
+
+SET list = [1, 2, 3, 4, 5]
+APPEND(list, 6)
+POP(list, 0)
+SET list2 = [7, 8, 9]
+EXTEND(list, list2)
+PRINT(LEN(list))
+
+SET name = "John"
+PRINT("Hello {name}!")
+
+SET num1 = 10
+SET num2 = 5
+
+SET sum = num1 + num2
+SET diff = num1 - num2
+SET prod = num1 * num2
+SET div = num1 / num2
+SET power = num1 ^ num2
+
+SET str_num = "123"
+SET converted = INT(str_num)
+SET float_num = FLOAT("3.14")
+SET str_conv = STR(42)
+
+IF num1 > num2 THEN
+    PRINT("num1 is greater")
+OTHER num1 < num2 THEN
+    PRINT("num2 is greater")
+ELSE
+    PRINT("They are equal")
+STOP
+
+FOR i = 0 TO 5 THEN
+    PRINT(i)
+STOP
+
+SET counter = 0
+WHILE counter < 5 THEN
+    SET counter = counter + 1
+    IF counter == 3 THEN
+        CONTINUE
+    STOP
+    PRINT(counter)
+STOP
+
+FUNC add(x, y) -> x + y
+
+SET result = add(5, 3)
+PRINT(result)
+
+SET random_number = RANDOM_INT(1, 10)
+SET random_float = RANDOM_FLOAT(0, 1)
+SET choices = ["A", "B", "C"]
+SET random_choice = RANDOM_CHOICE(choices)
+
+SET user_input = INPUT("Enter something")
+SET user_number = INPUT_INT("Enter a number")
+
+CLEAR()
+
+SET pi = MATH_PI
+SET e = MATH_E
+SET tau = MATH_TAU
+
+IF IS_NUM(42) AND IS_STR("text") THEN
+    PRINT("Type checking works!")
+STOP
+
+SET formatted = ("Value: {pi}")
+PRINT(formatted)
