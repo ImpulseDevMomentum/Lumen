@@ -33,14 +33,15 @@ and again: <br>
 > 😑 Complex Features:
 - Add `"{}"` to PRINT() ( so instead of `PRINT(f"{}")`, you'll be able to use `PRINT("{variable}") without f-strings` ). ☑️
 - Integrate more APIs (from existing libraries such as `os`, `colorama`, `random` etc.). ☑️ **(only random for now)**
-- Create comprehensive documentation.
+- Create comprehensive documentation. ☑️
 - Develop a way to code custom libraries. (Probably WON'T do this)
-- Custom `Lumen IDE` ☑️ (Beta)
+- Custom `Lumen IDE` ☑️
 
 
 > 🔗 Useful Links: <br>
 CodePulse's Github: https://github.com/davidcallanan <br>
 Lumen IDE: https://github.com/ImpulseDevMomentum/Lumen-IDE <br>
+Docs: https://lumenlang.gitbook.io/lumen-docs <br>
 Wish Logger PY: https://github.com/ImpulseDevMomentum/WishLoggerPY <br>
 Wish Logger JS: https://github.com/ImpulseDevMomentum/WishLoggerJS <br>
 FuzeMC: https://github.com/ImpulseDevMomentum/fuzemc <br>
